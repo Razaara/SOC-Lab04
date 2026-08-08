@@ -6,17 +6,7 @@ pipeline {
     jdk 'JDK17'
   }
 
-  environment {
-    SONAR_HOST = 'http://localhost:9000'
-  }
-
   stages {
-    stage('Checkout') {
-      steps {
-        git branch: 'main', url: 'https://github.com/Razaara/SOC-Lab04.git'
-      }
-    }
-
     stage('Build') {
       steps {
         dir('demo') {
@@ -37,7 +27,7 @@ pipeline {
       steps {
         dir('demo') {
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            bat 'mvn -B sonar:sonar -Dsonar.projectKey=student-crud -Dsonar.host.url=%SONAR_HOST% -Dsonar.login=%SONAR_TOKEN%'
+            bat 'mvn -B sonar:sonar -Dsonar.projectKey=student-crud -Dsonar.host.url=http://localhost:9000 -Dsonar.login=%SONAR_TOKEN%'
           }
         }
       }
