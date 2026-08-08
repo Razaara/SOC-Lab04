@@ -1,0 +1,54 @@
+pipeline {
+  agent any
+
+  tools {
+    maven 'Maven'
+    jdk 'JDK17'
+  }
+
+  environment {
+    SONAR_HOST = 'http://host.docker.internal:9000'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Razaara/SOC-Lab04.git'
+      }
+    }
+
+    stage('Build') {
+      steps {
+        dir('demo') {
+          sh 'mvn -B clean package -DskipTests'
+        }
+      }
+    }
+
+    stage('Test') {
+      steps {
+        dir('demo') {
+          sh 'mvn -B test'
+        }
+      }
+    }
+
+    stage('SonarQube') {
+      steps {
+        dir('demo') {
+          withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            sh 'mvn -B sonar:sonar -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_TOKEN'
+          }
+        }
+      }
+    }
+
+    stage('Docker Build') {
+      steps {
+        dir('demo') {
+          sh 'docker build -t student-app:latest .'
+        }
+      }
+    }
+  }
+}
